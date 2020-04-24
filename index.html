@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>toDoList</title>
+</head>
+<style type="text/css">
+	  .small-container{
+     max-width: 520px;
+     margin:0px auto;
+ }
+	ul{list-style: none;}
+ li{
+     position: relative;
+     background-color: deepskyblue;
+     color:white;
+     padding: 20px 30px;
+     margin-bottom: 10px;
+     transition: 0.5s;
+
+ }
+ li:hover{
+     box-shadow: 0px 0px 10px 0px black;
+ }
+	li button,#edit
+	{
+		margin-left: 10px;
+		margin-top: 10px;
+		width: 70px;
+		height: 40px;
+		outline: none;
+		cursor: pointer;
+	}
+	input
+	{
+		width: 400px;
+		height: 35px;
+		margin-left: 20px;
+		padding-left: 4px;
+	}
+	::placeholder{padding-left: 4px;}
+	.clear-btn
+	{
+		width: 80px;
+		height: 45px;
+		margin-left: 20px;
+		margin-top: 20px;
+		/*background-color: blue;*/
+		/*color: white;*/
+		outline: none;
+		cursor: pointer;
+	}
+	h1,h2{margin-left: 20px;}
+</style>
+<body>
+<div class="small-container">
+<h1>New Tab App</h1>
+
+<form>
+ <input id="item" type="text" placeholder="Add New Item in List">
+ <button type="button" onclick="handleUpdate(event);" id="edit">Edit</button>
+</form>
+
+<h2>Items</h2>
+<ul></ul>
+
+<button class="clear-btn">Clear All</button>
+</div>
+<script type="text/javascript">
+const form=document.querySelector('form');
+const ul=document.querySelector('ul');
+const button5=document.querySelector('.clear-btn');
+const input=document.getElementById('item');
+let indexOfValueToBeChanged = -1;
+
+let itemsArray=localStorage.getItem('items') ? JSON.parse(localStorage.getItem('items')) : [];
+
+localStorage.setItem('items',JSON.stringify(itemsArray));
+const data=JSON.parse(localStorage.getItem('items'));
+
+const liMaker = (text,index) => {
+	const li=document.createElement('li');
+	li.textContent=text;
+	ul.appendChild(li);
+	
+	li.setAttribute("data-index",index);
+	const button1=document.createElement('button');
+	button1.textContent="Update";
+	button1.onclick= function(){
+		setValueToInput(text,index);
+	}
+	//button1.style.backgroundColor="green";
+	li.appendChild(button1);
+	const button2=document.createElement('button');
+	button2.textContent="Delete";
+	button2.onclick=function(){
+		handleDelete(index);
+	}
+	//button2.style.backgroundColor="red";
+	li.appendChild(button2);
+	const button3=document.createElement('button');
+	button3.textContent="Up";
+	button3.onclick=function()
+	{
+		handleUp(index);
+	}
+	//button3.style.backgroundColor="#1ae0e0";
+	li.appendChild(button3);
+    const button4=document.createElement('button');
+	button4.textContent="Down";
+	button4.onclick=function(){
+		handleDown(index);
+	}
+	li.appendChild(button4);
+	//button4.style.backgroundColor="#1ae0e0";
+}	
+
+form.addEventListener('submit',function(e)
+{
+	e.preventDefault();
+
+	itemsArray.push(input.value);
+	localStorage.setItem('items', JSON.stringify(itemsArray));//local storage only takes data in string form
+	liMaker(input.value,itemsArray.length-1);
+	input.value="";
+});
+ // forEach provides value index and array as well if required
+data.forEach((item,index) => {
+	liMaker(item,index);
+});
+button5.addEventListener('click',function(){
+	localStorage.clear();
+	while (ul.firstChild){
+		ul.removeChild(ul.firstChild);
+	}
+	itemsArray = [];
+});
+function handleUpdate(e)
+{
+	
+	
+	console.log("Edit Task...");
+    let v = input.value;
+    if(indexOfValueToBeChanged === -1){
+        alert(" Press `Enter` key to save `New Entry`.");
+        return;
+    }else{
+        itemsArray[indexOfValueToBeChanged] = v;
+        console.log(itemsArray);
+        
+        localStorage.setItem('items',JSON.stringify(itemsArray));
+        ul.innerHTML = "";
+        itemsArray.forEach((item,index) => {
+  liMaker(item,index);
+});
+    }
+    indexOfValueToBeChanged = -1;
+    input.value = "";
+
+
+	// updating in HTML result
+    // var listItem = this.parentNode;
+    // var newV=prompt("Enter updated value");
+    // console.log(newV);
+    
+    // var searchV=listItem.innerHTML;
+    // console.log(searchV);
+    //     listItem.innerHTML = `${newV}<button>Update</button><button>Delete</button><button>Up</button><button>Down</button>`;
+
+		
+		
+	alert("Updated");
+}
+    
+function setValueToInput(v,i){
+input.value = v;
+indexOfValueToBeChanged = i;
+}
+function handleDelete(i)
+{
+       
+         // remove from local storage
+         itemsArray.splice(i,1);
+        localStorage.setItem('items',JSON.stringify(itemsArray));
+        
+         // remove from html result
+
+         // var listItem = this.parentNode;
+         // ul.removeChild(listItem);
+         
+         let liToBeRemoved = document.querySelector(`li[data-index="${i}"]`);
+         liToBeRemoved.parentNode.removeChild(liToBeRemoved);
+         // ul.removeChild(liToBeRemoved);
+
+
+        // ul.innerHTML="";
+//         itemsArray.forEach((item,index) => {
+// 	liMaker(item,index);
+// });
+       
+		alert("Deleted");
+        
+		
+}
+function handleUp(i)
+{
+
+    var temp;
+    if(i-1!=-1)
+    {
+    temp=itemsArray[i];
+    itemsArray[i]=itemsArray[i-1];
+    itemsArray[i-1]=temp;
+   
+    localStorage.setItem('items',JSON.stringify(itemsArray));
+    ul.innerHTML = "";
+        itemsArray.forEach((item,index) => {
+  liMaker(item,index);
+  });
+    }
+    else{
+    	
+    	itemsArray[i]=itemsArray[i];
+    }
+    
+
+	// alert("MovedUp");
+}
+function handleDown(i)
+{
+
+    var temp;
+    if(i+1<itemsArray.length)
+    {
+    temp=itemsArray[i];
+    itemsArray[i]=itemsArray[i+1];
+    itemsArray[i+1]=temp;
+
+    localStorage.setItem('items',JSON.stringify(itemsArray));
+
+    ul.innerHTML = "";
+        itemsArray.forEach((item,index) => {
+  liMaker(item,index);
+
+});
+    }
+    else{
+    	itemsArray[i]=itemsArray[i];
+    }
+	// var listItem = this.parentNode;
+ //    var ListItem=listItem.innerHTML;
+ //    console.log(ListItem);
+
+ //    var SList=listItem.nextElementSibling;
+ //    var SListItem=listItem.nextElementSibling.innerHTML;
+ //    console.log(SListItem);
+
+ //    ListItem.replace(ListItem,SListItem);
+ //    SListItem.replace(SListItem,ListItem);
+
+	// alert("MovedDown");
+}
+</script>
+</body>
+</html>
